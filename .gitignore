@@ -1,0 +1,8 @@
+.Python
+bin/
+include/
+lib/
+message.proto
+message_pb2.py
+pip-selfcheck.json
+*.pyc
