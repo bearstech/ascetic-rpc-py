@@ -2,7 +2,7 @@ import struct
 import inspect
 import socket
 
-from message_pb2 import Request, Response
+from message_pb2 import Request, Response, Error
 
 
 class Server:
@@ -31,9 +31,15 @@ class Server:
             insp = inspect.getfullargspec(handler)
             req = insp.annotations[insp.args[1]]()
             req.ParseFromString(request.RawBody)
-            resp = handler(req)
-            print("Resp ", resp)
-            rawResp = Response(RawOK=resp.SerializeToString()).SerializeToString()
+            err = None
+            try:
+                resp = handler(req)
+            except e:
+                err = Error(Message=str(e), Type=Error.APPLICATION)
+            if err is None:
+                rawResp = Response(RawOK=resp.SerializeToString()).SerializeToString()
+            else:
+                rawResp = Response(Error=err).SerializeToString()
             connection.sendall(struct.pack("<h", len(rawResp)))
             connection.sendall(rawResp)
 
