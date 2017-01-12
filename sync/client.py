@@ -18,6 +18,8 @@ class Client:
         rsize = struct.unpack("<h", self.sock.recv(2))[0]
         resp = Response()
         resp.ParseFromString(self.sock.recv(rsize))
+        if resp.HasField('Error'):
+            raise Exception(resp.Error)
         r = response()
         r.ParseFromString(resp.RawOK)
         return r

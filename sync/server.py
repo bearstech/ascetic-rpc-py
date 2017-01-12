@@ -35,7 +35,7 @@ class Server:
             err = None
             try:
                 resp = handler(req)
-            except e:
+            except Exception as e:
                 err = Error(Message=str(e), Type=Error.APPLICATION)
             if err is None:
                 rawResp = Response(RawOK=resp.SerializeToString()).SerializeToString()

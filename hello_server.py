@@ -8,6 +8,8 @@ from sync.server import Server
 class Test:
 
     def hello(self, hello :Hello) -> World:
+        if hello.Name == "Adolph":
+            raise Exception('Bad name')
         return World(Message='Hello %s' % hello.Name)
 
 
