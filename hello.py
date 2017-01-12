@@ -16,6 +16,5 @@ if __name__ == "__main__":
         os.remove('/tmp/ascetic.socket')
     except:
         pass
-    server= Server("/tmp/ascetic.socket")
-    server.handlers = Test()
+    server= Server("/tmp/ascetic.socket", Test())
     server.serve()

@@ -7,9 +7,10 @@ from message_pb2 import Request, Response, Error
 
 class Server:
 
-    def __init__(self, path):
+    def __init__(self, path, handlers):
         self.sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         self.sock.bind(path)
+        self.handlers = handlers
 
     def serve(self):
         self.sock.listen(1)
