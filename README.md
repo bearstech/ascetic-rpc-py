@@ -1,5 +1,5 @@
-Ascetic-RPC for python Tornado
-==============================
+Ascetic-RPC for python
+======================
 
 
 Licence
