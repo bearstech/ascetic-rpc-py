@@ -1,2 +1,2 @@
 proto:
-	protoc --python_out=. message.proto
+	protoc --python_out=. *.proto
