@@ -10,6 +10,9 @@ class Test:
     def hello(self, hello :Hello) -> World:
         if hello.Name == "Adolph":
             raise Exception('Bad name')
+        if hello.Name == "Pacome":
+            for name in u"Eugesipe Adélard Ladislas".split(" "):
+                yield World(Message=name)
         return World(Message='Hello %s' % hello.Name)
 
 

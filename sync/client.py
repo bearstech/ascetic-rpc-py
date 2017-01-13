@@ -2,7 +2,7 @@ import socket
 import functools
 import struct
 
-from message_pb2 import Response, Request
+from message_pb2 import Response, Request, Chunk
 
 
 class Client:
@@ -20,9 +20,21 @@ class Client:
         resp.ParseFromString(self.sock.recv(rsize))
         if resp.HasField('Error'):
             raise Exception(resp.Error)
-        r = response()
-        r.ParseFromString(resp.RawOK)
-        return r
+        if not resp.HasField('Stream'):
+            r = response()
+            r.ParseFromString(resp.RawOK)
+            return r
+        while True:
+            csize = struct.unpack("<h", self.sock.recv(2))[0]
+            chunk = Chunk()
+            chunk.ParseFromString(self.sock.recv(csize))
+            if chunk.HasField('Error'):
+                raise Exception(chunk.Error)
+            if chunk.HasField('EOF'):
+                break
+            r = response()
+            r.ParseFromString(chunk.RawOK)
+            yield r
 
 
 class MockCall:
