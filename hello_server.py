@@ -4,7 +4,7 @@ import os
 import logging
 
 from test_pb2 import Hello, World
-from sync.server import Server
+from ascetic_rpc.sync.server import Server
 
 class Test:
 

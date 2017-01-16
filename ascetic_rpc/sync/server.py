@@ -6,7 +6,7 @@ import pdb
 import time
 
 
-from message_pb2 import Request, Response, Error, Chunk
+from ascetic_rpc.message_pb2 import Request, Response, Error, Chunk
 
 logger = logging.getLogger(__name__)
 

@@ -3,7 +3,7 @@ import functools
 import struct
 import logging
 
-from message_pb2 import Response, Request, Chunk
+from ascetic_rpc.message_pb2 import Response, Request, Chunk
 
 logger = logging.getLogger(__name__)
 

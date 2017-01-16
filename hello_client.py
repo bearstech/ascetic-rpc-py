@@ -4,7 +4,7 @@ import sys
 import logging
 
 from test_pb2 import Hello, World
-from sync.client import Client
+from ascetic_rpc.sync.client import Client
 
 logging.basicConfig(level=logging.DEBUG)
 
