@@ -17,7 +17,8 @@ class Client:
 
     def do(self, name, arg, response):
         print("do", name, arg, response)
-        logger.debug(name, arg)
+        logger.debug("name %s" % name)
+        logger.debug("args %s" % arg)
         req = Request(Name=name,
                       RawBody=arg.SerializeToString()).SerializeToString()
         print("req", req)
