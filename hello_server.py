@@ -14,7 +14,7 @@ class Test:
 
     def hello(self, hello :Hello) -> World:
         print("hello ", hello)
-        if hello.Name == "Adolph":
+        if hello.Name == "Adolf":
             raise Exception('Bad name')
         return World(Message='Hello %s' % hello.Name)
 

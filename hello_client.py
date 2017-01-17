@@ -12,13 +12,11 @@ client = Client("/tmp/ascetic.socket")
 
 name = sys.argv[1]
 hello = Hello(Name=name)
-print("hello ", hello)
 
-if name != "Pacome":
-    world = client.do("hello", hello, World)
-    print("world ", world)
-    print(world.Message)
-else:
+if name == "Pacome":
     worlds = client.do("mob", hello, World)
     for world in worlds:
         print(world.Message)
+else:
+    world = client.do("hello", hello, World)
+    print(world.Message)

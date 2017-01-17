@@ -8,6 +8,26 @@ from .protocol import Protocol
 logger = logging.getLogger(__name__)
 
 
+class Streamer:
+
+    def __init__(self, protocol, model):
+        self.protocol = protocol
+        self.model = model
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        chunk = self.protocol.read(Chunk)
+        if chunk.HasField('Error'):
+            raise Exception(chunk.Error)
+        if chunk.HasField('EOF'):
+            raise StopIteration
+        r = self.model()
+        r.ParseFromString(chunk.RawOK)
+        return r
+
+
 class Client:
 
     def __init__(self, path):
@@ -23,20 +43,11 @@ class Client:
         resp = self.protocol.read(Response)
         if resp.HasField('Error'):
             raise Exception(resp.Error)
-        if not resp.Stream:
-            r = response()
-            r.ParseFromString(resp.RawOK)
-            return r
-        else:
-            while True:
-                chunk = self.protocol.read(Chunk)
-                if chunk.HasField('Error'):
-                    raise Exception(chunk.Error)
-                if chunk.HasField('EOF'):
-                    break
-                r = response()
-                r.ParseFromString(chunk.RawOK)
-                yield r
+        if resp.Stream:
+            return Streamer(self.protocol, response)
+        r = response()
+        r.ParseFromString(resp.RawOK)
+        return r
 
 
 class MockCall:
