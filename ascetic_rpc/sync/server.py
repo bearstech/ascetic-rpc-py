@@ -2,11 +2,12 @@ import struct
 import inspect
 import socket
 import logging
-import pdb
 import time
 
 
 from ascetic_rpc.message_pb2 import Request, Response, Error, Chunk
+from .protocol import Protocol
+
 
 logger = logging.getLogger(__name__)
 
@@ -16,7 +17,6 @@ class Server:
     def __init__(self, path, handlers):
         self.sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         self.sock.bind(path)
-        #self.sock.settimeout(10)
         self.handlers = handlers
 
     def serve(self):
@@ -26,22 +26,12 @@ class Server:
             self.handle_stream(connection, client_address)
 
     def handle_stream(self, connection, address):
-        logger.debug("stream")
-        #pdb.set_trace()
+        protocol = Protocol(connection)
         while True:
-            raw_size = connection.recv(2)
-            logger.debug("Raw size %s" % raw_size)
-            if raw_size == b'':
-                connection.close()
-                logger.warning("closing the socket")
+            try:
+                request = protocol.read(Request)
+            except StopIteration:
                 break
-            size = struct.unpack("<h", raw_size)[0]
-            logger.debug("Size: %i" % size)
-            raw = connection.recv(size)
-            print("Raw request ", raw)
-            request = Request()
-            request.ParseFromString(raw)
-            logger.info(request)
             handler = getattr(self.handlers, request.Name)
             insp = inspect.getfullargspec(handler)
             req = insp.annotations[insp.args[1]]()
@@ -52,23 +42,16 @@ class Server:
             except Exception as e:
                 err = Error(Message=str(e), Type=Error.APPLICATION)
             if err is not None:
-                response(connection, Response(Error=err))
+                protocol.write(Response(Error=err))
             else:
                 if inspect.isgenerator(resp):
-                    response(connection, Response(Stream=True))
+                    protocol.write(Response(Stream=True))
                     try:
                         for r in resp:
-                            response(connection,
-                                     Chunk(RawOK=r.SerializeToString()))
+                            protocol.write(Chunk(RawOK=r.SerializeToString()))
                     except Exception as e:
                         err = Error(Message=str(e), Type=Error.APPLICATION)
-                        response(connection, Chunk(Error=err))
-                    response(connection, Chunk(EOF=True))
+                        protocol.write(Chunk(Error=err))
+                    protocol.write(Chunk(EOF=True))
                 else:
-                    response(connection,
-                             Response(RawOK=resp.SerializeToString()))
-
-def response(connection, r):
-    rawResp = r.SerializeToString()
-    connection.sendall(struct.pack("<h", len(rawResp)))
-    connection.sendall(rawResp)
+                    protocol.write(Response(RawOK=resp.SerializeToString()))
