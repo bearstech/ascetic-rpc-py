@@ -1,9 +1,6 @@
-import struct
 import inspect
 import socket
 import logging
-import time
-
 
 from ascetic_rpc.message_pb2 import Request, Response, Error, Chunk
 from .protocol import Protocol

@@ -1,5 +1,4 @@
 import socket
-import functools
 import logging
 
 from ascetic_rpc.message_pb2 import Response, Request, Chunk
@@ -48,20 +47,3 @@ class Client:
         r = response()
         r.ParseFromString(resp.RawOK)
         return r
-
-
-class MockCall:
-    def __init__(self, m, name):
-        self._m = m
-        self._name = name
-
-    def __call__(self, arg):
-        return self._m._client.Do(self._name, arg)
-
-
-class Mock:
-    def __init__(self, client):
-        self._client = client
-
-    def __get__(self, name):
-        return MockCall(self, name)
