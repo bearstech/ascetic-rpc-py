@@ -1,9 +1,9 @@
 import socket
 import functools
-import struct
 import logging
 
 from ascetic_rpc.message_pb2 import Response, Request, Chunk
+from .protocol import Protocol
 
 logger = logging.getLogger(__name__)
 
@@ -12,22 +12,15 @@ class Client:
 
     def __init__(self, path):
         self._path = path
-        self.sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-        self.sock.connect(path)
+        sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+        sock.connect(path)
+        self.protocol = Protocol(sock)
 
     def do(self, name, arg, response):
-        print("do", name, arg, response)
-        logger.debug("name %s" % name)
-        logger.debug("args %s" % arg)
         req = Request(Name=name,
-                      RawBody=arg.SerializeToString()).SerializeToString()
-        print("req", req)
-        self.sock.sendall(struct.pack("<h", len(req)))
-        self.sock.sendall(req)
-        rsize = struct.unpack("<h", self.sock.recv(2))[0]
-        resp = Response()
-        resp.ParseFromString(self.sock.recv(rsize))
-        logger.debug("resp isTstream %s" % str(resp.Stream))
+                      RawBody=arg.SerializeToString())
+        self.protocol.write(req)
+        resp = self.protocol.read(Response)
         if resp.HasField('Error'):
             raise Exception(resp.Error)
         if not resp.Stream:
@@ -36,9 +29,7 @@ class Client:
             return r
         else:
             while True:
-                csize = struct.unpack("<h", self.sock.recv(2))[0]
-                chunk = Chunk()
-                chunk.ParseFromString(self.sock.recv(csize))
+                chunk = self.protocol.read(Chunk)
                 if chunk.HasField('Error'):
                     raise Exception(chunk.Error)
                 if chunk.HasField('EOF'):
