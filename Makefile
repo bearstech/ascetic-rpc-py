@@ -1,4 +1,4 @@
-proto:
+protoc:
 	protoc --python_out=. *.proto
 
 clean:
