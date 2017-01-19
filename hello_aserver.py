@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 
-from asyncio import get_event_loop
+from asyncio import get_event_loop, start_unix_server
 from test_pb2 import Hello, World
 
-from ascetic_rpc.async.server import AsceticProtocolFactory
+from ascetic_rpc.async.server import Server
 
 
 class Test:
@@ -12,7 +12,7 @@ class Test:
         for name in u"Eugesipe Adélard Ladislas".split(" "):
             yield World(Message=name)
 
-    def hello(self, hello: Hello) -> World:
+    async def hello(self, hello: Hello) -> World:
         print("hello ", hello)
         if hello.Name == "Adolf":
             raise Exception('Bad name')
@@ -21,7 +21,8 @@ class Test:
 
 if __name__ == '__main__':
     loop = get_event_loop()
-    coro = loop.create_unix_server(AsceticProtocolFactory(Test()),
-                                   "/tmp/ascetic.socket")
+    server = Server(Test())
+    coro = start_unix_server(server.cb,
+                             path="/tmp/ascetic.socket", loop=loop)
     server = loop.run_until_complete(coro)
     loop.run_forever()
