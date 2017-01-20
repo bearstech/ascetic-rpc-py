@@ -8,7 +8,7 @@ from ascetic_rpc.async.server import Server
 
 class Test:
 
-    def mob(self, hello: Hello) -> World:
+    async def mob(self, hello: Hello) -> World:
         for name in u"Eugesipe Adélard Ladislas".split(" "):
             yield World(Message=name)
 
@@ -22,7 +22,7 @@ class Test:
 if __name__ == '__main__':
     loop = get_event_loop()
     server = Server(Test())
-    coro = start_unix_server(server.cb,
+    coro = start_unix_server(server.make_handler,
                              path="/tmp/ascetic.socket", loop=loop)
     server = loop.run_until_complete(coro)
     loop.run_forever()

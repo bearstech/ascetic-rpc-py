@@ -21,7 +21,7 @@ class Server:
     def __init__(self, handlers):
         self.handlers = handlers
 
-    async def cb(self, reader, writer):
+    async def make_handler(self, reader, writer):
         request = Request()
         request.ParseFromString(await read(reader))
         handler = getattr(self.handlers, request.Name)
@@ -29,9 +29,20 @@ class Server:
         req = insp.annotations[insp.args[1]]()
         req.ParseFromString(request.RawBody)
         try:
-            r = await handler(req)
+            if inspect.isasyncgenfunction(handler):
+                write(writer, Response(Stream=True))
+                try:
+                    async for r in handler(req):
+                        write(writer, Chunk(RawOK=r.SerializeToString()))
+                except Exception as e:
+                    err = Error(Message=str(e), Type=Error.APPLICATION)
+                    write(writer, Chunk(Error=err))
+                    raise e
+                write(writer, Chunk(EOF=True))
+            else:
+                assert inspect.iscoroutinefunction(handler)
+                resp = await handler(req)
+                write(writer, Response(RawOK=resp.SerializeToString()))
         except Exception as e:
             err = Error(Message=str(e), Type=Error.APPLICATION)
             write(writer, Response(Error=err))
-        else:
-            write(writer, Response(RawOK=r.SerializeToString()))
