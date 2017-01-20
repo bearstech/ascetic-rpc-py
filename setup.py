@@ -3,7 +3,7 @@ import os
 from setuptools import setup
 from setuptools import find_packages
 
-version = '0.2.dev0'
+version = '0.3.dev0'
 
 
 def read(*rnames):
@@ -17,7 +17,7 @@ setup(
     #long_description=read('README.rst'),
     classifiers=[
         'Intended Audience :: Developers',
-        'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3.6',
     ],
     keywords='',
     author='Mathieu Lecarme',
