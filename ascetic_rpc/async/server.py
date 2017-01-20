@@ -3,14 +3,17 @@ import inspect
 
 from ascetic_rpc.message_pb2 import Request, Response, Error, Chunk
 
-SIZE = 1
-BODY = 2
-
 
 def write(wire, message):
     raw = message.SerializeToString()
     wire.write(struct.pack("<h", len(raw)))
     wire.write(raw)
+
+
+async def read(wire):
+    rawsize = await wire.readexactly(2)
+    size = struct.unpack("<h", rawsize)[0]
+    return await wire.readexactly(size)
 
 
 class Server:
@@ -19,11 +22,8 @@ class Server:
         self.handlers = handlers
 
     async def cb(self, reader, writer):
-        rawsize = await reader.readexactly(2)
-        size = struct.unpack("<h", rawsize)[0]
-        raw = await reader.readexactly(size)
         request = Request()
-        request.ParseFromString(raw)
+        request.ParseFromString(await read(reader))
         handler = getattr(self.handlers, request.Name)
         insp = inspect.getfullargspec(handler)
         req = insp.annotations[insp.args[1]]()
@@ -31,4 +31,3 @@ class Server:
         r = await handler(req)
         response = Response(RawOK=r.SerializeToString())
         write(writer, response)
-
