@@ -28,6 +28,10 @@ class Server:
         insp = inspect.getfullargspec(handler)
         req = insp.annotations[insp.args[1]]()
         req.ParseFromString(request.RawBody)
-        r = await handler(req)
-        response = Response(RawOK=r.SerializeToString())
-        write(writer, response)
+        try:
+            r = await handler(req)
+        except Exception as e:
+            err = Error(Message=str(e), Type=Error.APPLICATION)
+            write(writer, Response(Error=err))
+        else:
+            write(writer, Response(RawOK=r.SerializeToString()))
