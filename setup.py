@@ -3,7 +3,7 @@ import os
 from setuptools import setup
 from setuptools import find_packages
 
-version = '0.3.dev0'
+version = '0.3.dev1'
 
 
 def read(*rnames):
@@ -22,7 +22,10 @@ setup(
     keywords='',
     author='Mathieu Lecarme',
     author_email='mlecarme@bearstech.com',
-    #packages=find_packages(exclude=['docs', 'tests']),
+    packages=['ascetic_rpc',
+              'ascetic_rpc.async',
+              'ascetic_rpc.sync'],
+    package_dir={'ascetic_rpc':'ascetic_rpc'},
     include_package_data=True,
     zip_safe=False,
     install_requires=[
